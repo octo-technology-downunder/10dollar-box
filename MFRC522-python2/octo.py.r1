@@ -1,0 +1,53 @@
+import MFRC522
+import time
+
+def readNfc():
+    MIFAREReader = MFRC522.MFRC522()
+    reading = True
+    while reading:
+
+        (status,TagType) = MIFAREReader.MFRC522_Request(MIFAREReader.PICC_REQIDL)
+
+        (status,backData) = MIFAREReader.MFRC522_Anticoll()
+        if status == MIFAREReader.MI_OK:
+          # MIFAREReader.AntennaOff()
+          # reading=False
+          uidStr = str(backData[0])+""+str(backData[1])+""+str(backData[2])+""+str(backData[3])+""+str(backData[4])
+          print "Card detected", uidStr, time.time()
+
+          for a in range(0,256):
+
+            key = [0xFF,0xFF,0xFF,0xFF,0xFF,0xFF]
+            #key = [0x0,0x0,0x0,0x0,0x0,0x0]
+            #key = [0xA0,0xA1,0xA2,0xA3,0xA4,0xA5]
+            #key = [0xB0,0xB1,0xB2,0xB3,0xB4,0xB5]
+            key = [a,a,a,a,a,a]
+            print "KEY: ", a
+
+            MIFAREReader.MFRC522_SelectTag(backData)
+
+            status = MIFAREReader.MFRC522_Auth(MIFAREReader.PICC_AUTHENT1A, 8, key, backData)
+            print "\n"
+          
+            if status == MIFAREReader.MI_OK:
+                
+                print "Sector 8 looked like this:"
+                MIFAREReader.MFRC522_Read(8)
+                print "\n"
+
+                print "Status OK"
+                data = []
+                for x in range(0,16):
+                    data.append(0x10)
+
+                print "Sector 8 will now be filled with 0xFF:"
+                #MIFAREReader.MFRC522_Write(8, data)
+                #print "\n"
+
+                print "It now looks like this:"
+                #MIFAREReader.MFRC522_Read(8)
+                #print "\n"
+
+                MIFAREReader.MFRC522_StopCrypto1()
+
+readNfc()
